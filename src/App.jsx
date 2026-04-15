@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { parseFile } from './parser';
 import { runAudit } from './audit';
+import { exportPDF } from './pdfExport';
 import { INTL_BRANCHES, OP_ACCOUNTS, getRisk, fmt, fFull, fmtTotal, RULES } from './config';
 import { SeverityBadge, Pill, AccountPill, StatCard, RiskBar } from './components';
 
@@ -208,6 +209,16 @@ export default function App() {
             <option value="all">Todas las sucursales</option>
             {sucList.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <button
+            onClick={() => exportPDF({ records: recs, alerts, fileName: fn, sucFilter: sucFilt })}
+            style={{
+              padding: '5px 12px', borderRadius: 6, background: '#dc2626',
+              color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              border: 'none', display: 'flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            📄 Exportar PDF
+          </button>
           <label style={{
             padding: '5px 12px', borderRadius: 6, background: 'var(--bd)',
             color: 'var(--mt)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
