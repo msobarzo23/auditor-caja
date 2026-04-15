@@ -1,0 +1,70 @@
+:root {
+  --bg: #0c0e14;
+  --c1: #12151e;
+  --c2: #181c28;
+  --bd: #252a3a;
+  --tx: #dfe2ea;
+  --mt: #717892;
+  --ac: #4d8aff;
+  --cr: #ef4444;
+  --wn: #eab308;
+  --ok: #22c55e;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { min-height: 100vh; }
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.fade-in { animation: fadeIn 0.35s ease both; }
+
+/* Scrollbar */
+.scroll-area { overflow-y: auto; }
+.scroll-area::-webkit-scrollbar { width: 5px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 3px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+th {
+  padding: 8px 6px; text-align: left; color: var(--mt);
+  font-weight: 700; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.4px; border-bottom: 1px solid var(--bd);
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+th:hover { color: var(--ac); }
+td {
+  padding: 6px; border-bottom: 1px solid var(--bd);
+  color: var(--tx); vertical-align: top;
+}
+tr:hover td { background: rgba(77, 138, 255, 0.03); }
+
+/* Inputs */
+.inp {
+  background: var(--c2); border: 1px solid var(--bd);
+  color: var(--tx); padding: 7px 12px; border-radius: 7px;
+  font-size: 12px; outline: none; width: 100%;
+  font-family: var(--font);
+}
+.inp:focus { border-color: var(--ac); }
+
+select {
+  background: var(--c2); border: 1px solid var(--bd);
+  color: var(--tx); padding: 6px 10px; border-radius: 7px;
+  font-size: 11px; outline: none; cursor: pointer;
+  font-family: var(--font);
+}
+select:focus { border-color: var(--ac); }
