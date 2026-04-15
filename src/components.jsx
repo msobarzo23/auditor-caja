@@ -1,5 +1,5 @@
 import React from 'react';
-import { getRisk } from './config';
+import { getRisk, fmt } from './config';
 
 export const SeverityBadge = ({ severity }) => {
   const cfg = {
@@ -37,26 +37,29 @@ export const AccountPill = ({ cuenta }) => {
   return <Pill text={cuenta} color={r.c} />;
 };
 
-export const StatCard = ({ label, value, sub, accent }) => (
-  <div style={{
-    background: 'var(--c2)', borderRadius: 10, padding: '14px 16px',
-    border: '1px solid var(--bd)', flex: '1 1 140px', minWidth: 125,
-  }}>
+export const StatCard = ({ label, value, sub, accent }) => {
+  const isLong = typeof value === 'string' && value.length > 10;
+  return (
     <div style={{
-      fontSize: 10, color: 'var(--mt)', fontWeight: 600,
-      textTransform: 'uppercase', letterSpacing: 0.7,
+      background: 'var(--c2)', borderRadius: 10, padding: '14px 16px',
+      border: '1px solid var(--bd)', flex: '1 1 160px', minWidth: 145,
     }}>
-      {label}
+      <div style={{
+        fontSize: 10, color: 'var(--mt)', fontWeight: 600,
+        textTransform: 'uppercase', letterSpacing: 0.7,
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: isLong ? 18 : 24, fontWeight: 800, color: accent || 'var(--tx)',
+        marginTop: 3, fontVariantNumeric: 'tabular-nums',
+      }}>
+        {value}
+      </div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--mt)', marginTop: 1 }}>{sub}</div>}
     </div>
-    <div style={{
-      fontSize: 24, fontWeight: 800, color: accent || 'var(--tx)',
-      marginTop: 3, fontVariantNumeric: 'tabular-nums',
-    }}>
-      {value}
-    </div>
-    {sub && <div style={{ fontSize: 11, color: 'var(--mt)', marginTop: 1 }}>{sub}</div>}
-  </div>
-);
+  );
+};
 
 export const RiskBar = ({ cuenta, total, maxTotal }) => {
   const risk = getRisk(cuenta);
@@ -84,12 +87,7 @@ export const RiskBar = ({ cuenta, total, maxTotal }) => {
         width: 70, textAlign: 'right', fontSize: 11, fontWeight: 600,
         color: 'var(--tx)', fontVariantNumeric: 'tabular-nums',
       }}>
-        {(() => {
-          const a = Math.abs(total);
-          if (a >= 1e6) return `$${(total / 1e6).toFixed(1)}M`;
-          if (a >= 1e3) return `$${(total / 1e3).toFixed(0)}K`;
-          return `$${total.toFixed(0)}`;
-        })()}
+        {fmt(total)}
       </div>
       <Pill text={risk.l} color={risk.c} />
     </div>

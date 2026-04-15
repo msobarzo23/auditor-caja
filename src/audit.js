@@ -20,19 +20,35 @@ export function runAudit(records, isIntl) {
     r.descripcion === 'CASA MATRIZ';
 
   // ── R01: Duplicados exactos ──
-  const seen = new Map();
+  // Saturday covers Sunday: 2 identical records on Saturday are valid (1 sat + 1 sun)
+  // Only alert if >2 on Saturday, or >1 on non-Saturday
+  const dupeGroups = new Map();
   scope.forEach(r => {
     const k = `${r.fecha}|${r.apellido}|${r.nombre}|${r.cuenta}|${r.glosa}|${r.monto}`;
-    if (seen.has(k)) {
-      const p = seen.get(k);
+    if (!dupeGroups.has(k)) dupeGroups.set(k, []);
+    dupeGroups.get(k).push(r);
+  });
+  dupeGroups.forEach((group, k) => {
+    if (group.length < 2) return;
+    // Check if the date is a Saturday (caja covers Sunday)
+    const fecha = group[0].fecha; // DD/MM/YYYY
+    const parts = fecha.split('/');
+    let isSaturday = false;
+    if (parts.length === 3) {
+      const dt = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      isSaturday = dt.getDay() === 6; // 6 = Saturday
+    }
+    // On Saturday, 2 is OK (sat+sun), alert only if >2
+    // On any other day, alert if >1
+    const threshold = isSaturday ? 2 : 1;
+    if (group.length > threshold) {
+      const r = group[0];
       alerts.push({
         rule: 'R01', sev: 'critical', title: 'Duplicado exacto', suc: r.descripcion,
         desc: `${r.apellido} ${r.nombre} — ${r.cuenta} ${fFull(r.monto)} el ${r.fecha}`,
-        det: `Glosa: "${r.glosa}" — Vale ${r.valeid} vs ${p.valeid}`,
-        recs: [r, p],
+        det: `Glosa: "${r.glosa}" — ${group.length} registros idénticos (máx esperado: ${threshold})`,
+        recs: group,
       });
-    } else {
-      seen.set(k, r);
     }
   });
 
@@ -117,18 +133,35 @@ export function runAudit(records, isIntl) {
       }
     });
 
-  // ── R06: Bono sin autorización ──
-  const authPat = /aut[.\s]|autoriza/i;
+  // ── R06: Bono persona duplicada ──
+  // Detect same person receiving the same type of bono more than once
+  // Extract bono type from glosa (e.g. "BONO LOCOMOCIÓN", "BONO ESCOLARIDAD 2026")
+  const bonoByPerson = new Map();
   scope
-    .filter(r => r.cuenta === 'BONO' && !authPat.test(r.glosa) && r.monto > 50000)
+    .filter(r => r.cuenta === 'BONO')
     .forEach(r => {
-      alerts.push({
-        rule: 'R06', sev: 'critical', title: 'Bono sin autorización', suc: r.descripcion,
-        desc: `${r.apellido} ${r.nombre} — ${fFull(r.monto)} el ${r.fecha}`,
-        det: `"${r.glosa}"`,
-        recs: [r],
-      });
+      // Normalize bono type: take first 3 meaningful words after "BONO"
+      const words = r.glosa.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑÜ0-9\s]/g, '').trim().split(/\s+/);
+      const bonoIdx = words.indexOf('BONO');
+      const typeWords = words.slice(bonoIdx >= 0 ? bonoIdx : 0, (bonoIdx >= 0 ? bonoIdx : 0) + 3);
+      const bonoType = typeWords.join(' ') || 'BONO';
+      const key = `${r.apellido}|${r.nombre}|${bonoType}`;
+      if (!bonoByPerson.has(key)) bonoByPerson.set(key, []);
+      bonoByPerson.get(key).push(r);
     });
+  bonoByPerson.forEach((group, key) => {
+    if (group.length > 1) {
+      const r = group[0];
+      const dates = group.map(g => g.fecha).join(', ');
+      const totalMonto = group.reduce((s, g) => s + g.monto, 0);
+      alerts.push({
+        rule: 'R06', sev: 'critical', title: 'Bono persona duplicada', suc: r.descripcion,
+        desc: `${r.apellido} ${r.nombre} — "${r.glosa}" × ${group.length} veces (${fFull(totalMonto)})`,
+        det: `Fechas: ${dates}`,
+        recs: group,
+      });
+    }
+  });
 
   // ── R07: Razón social sin persona responsable ──
   scope

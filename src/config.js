@@ -29,12 +29,20 @@ export const INTL_BRANCHES = ['INTERNACIONAL ARG', 'INTERNACIONAL SOLES', 'INTER
 export const getRisk = (cuenta) => RISK[cuenta] || { l: '—', c: '#6b7280' };
 
 // ── Formatting ──
+// Short format for bars/pills (>100M no decimal, <100M one decimal)
 export const fmt = (n) => {
   if (n == null || isNaN(n)) return '$0';
   const abs = Math.abs(n);
+  if (abs >= 1e8) return `$${Math.round(n / 1e6)}M`;
   if (abs >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
   if (abs >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
   return `$${n.toFixed(0)}`;
+};
+
+// Full number format for KPI cards
+export const fmtTotal = (n) => {
+  if (n == null || isNaN(n)) return '$0';
+  return '$' + Math.round(n).toLocaleString('es-CL');
 };
 
 export const fFull = (n) => {
@@ -49,7 +57,7 @@ export const RULES = [
   { r: 'R03', l: 'Despachador cta. restringida' },
   { r: 'R04', l: 'Sueldo alto post-marzo LN' },
   { r: 'R05', l: 'Factura duplicada' },
-  { r: 'R06', l: 'Bono sin autorización' },
+  { r: 'R06', l: 'Bono persona duplicada' },
   { r: 'R07', l: 'Sin persona responsable' },
   { r: 'A01', l: 'Outliers estadísticos' },
   { r: 'A04', l: 'Anticipo elevado' },

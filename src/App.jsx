@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { parseFile } from './parser';
 import { runAudit } from './audit';
-import { INTL_BRANCHES, OP_ACCOUNTS, getRisk, fmt, fFull, RULES } from './config';
+import { INTL_BRANCHES, OP_ACCOUNTS, getRisk, fmt, fFull, fmtTotal, RULES } from './config';
 import { SeverityBadge, Pill, AccountPill, StatCard, RiskBar } from './components';
 
 export default function App() {
@@ -252,7 +252,7 @@ export default function App() {
         {tab === 'resumen' && stats && (
           <div className="fade-in">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
-              <StatCard label="Total Egresos" value={fmt(stats.total)} sub={`${activeRecs.length.toLocaleString()} reg`} />
+              <StatCard label="Total Egresos" value={fmtTotal(stats.total)} sub={`${activeRecs.length.toLocaleString()} reg`} />
               <StatCard label="Críticas" value={stats.cr} accent="var(--cr)" sub="Revisión urgente" />
               <StatCard label="Avisos" value={stats.wn} accent="var(--wn)" sub="Posibles anomalías" />
               <StatCard label="Personas" value={stats.personas} sub={`${stats.sucs.length} suc · ${stats.cajas} cajas`} />
