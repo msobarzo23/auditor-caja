@@ -6,17 +6,28 @@ import { INTL_BRANCHES, OP_ACCOUNTS, fFull } from './config';
  * @param {boolean} isIntl - Whether to audit international or national records
  * @returns {Array} Sorted alerts
  */
+// Comparación de persona case-insensitive y tolerante a espacios
+const apellidoEq = (r, target) => (r.apellido || '').toUpperCase().trim() === target;
+const nombreIncluye = (r, target) => (r.nombre || '').toUpperCase().includes(target);
+
+// Cristina López Araya — presidenta. Sus gastos no se auditan.
+const isPresidenta = r =>
+  apellidoEq(r, 'LOPEZ ARAYA') && nombreIncluye(r, 'CRISTINA');
+
 export function runAudit(records, isIntl) {
   const alerts = [];
-  const scope = isIntl
+  const baseScope = isIntl
     ? records.filter(r => INTL_BRANCHES.includes(r.descripcion))
     : records.filter(r => !INTL_BRANCHES.includes(r.descripcion));
+
+  // Excluir gastos de la presidenta — no se auditan
+  const scope = baseScope.filter(r => !isPresidenta(r));
 
   if (scope.length === 0) return alerts;
 
   const isDonLuisRetiro = r =>
-    r.apellido === 'BELLO LOPEZ' &&
-    (r.nombre || '').includes('LUIS') &&
+    apellidoEq(r, 'BELLO LOPEZ') &&
+    nombreIncluye(r, 'LUIS') &&
     r.descripcion === 'CASA MATRIZ';
 
   // ── R01: Duplicados exactos ──
